@@ -7,7 +7,7 @@ public class maze_solving {
 	static int depth;
 	
 	//Maze is initialized to 0 by default
-	static int[][] maze = new int[25][25];
+	static int[][] maze = new int[3][3];
 	static ArrayList<node> path_array = new ArrayList<node>();
 	
 	public static void main(String[] args) {
@@ -24,8 +24,8 @@ public class maze_solving {
 			//3 Stands for blocked, 1 for start node, 2 for goal node
 			//0 for not visited, maze is initialized to 0 by default.
 			// 9 for visited
-			int j = rand.nextInt(25);
-			int k = rand.nextInt(25);
+			int j = rand.nextInt(3);
+			int k = rand.nextInt(3);
 			maze[j][k] = 3;
 			System.out.println("(" + j + " " + k + ")");
 			i++;
@@ -49,6 +49,10 @@ public class maze_solving {
 		
 		beef(create_node(row,col,0));
 		
+		for(node n : path_array){
+			System.out.println("(" + n.getRow() + " " + n.getColumn() + ")" );
+		}
+		
 	}
 
 	public static void beef(node c_node) {
@@ -67,7 +71,7 @@ public class maze_solving {
 		
 
 		//Left
-		if(c_node.getRow()>= 1){
+		if(c_node.getColumn()>= 1){
 			if(maze[c_node.getRow()][c_node.getColumn() - 1] == 0 ){
 				node left = create_node(c_node.getRow(), c_node.getColumn()-1, depth+1 );
 				myQueue.add(left);
@@ -76,7 +80,7 @@ public class maze_solving {
 		}
 		
 		//down
-		if(c_node.getColumn() <= 23 ){
+		if(c_node.getRow() < 2 ){
 			if(maze[c_node.getRow() + 1][c_node.getColumn()] == 0 ){
 				node down = create_node(c_node.getRow() + 1, c_node.getColumn(), depth+1 );
 				myQueue.add(down);
@@ -85,7 +89,7 @@ public class maze_solving {
 		}
 		
 		//right
-		if(c_node.getRow() <= 23 ){
+		if(c_node.getColumn() < 2 ){
 			if(maze[c_node.getRow()][c_node.getColumn() + 1] == 0 ){
 				node right = create_node(c_node.getRow(), c_node.getColumn() + 1, depth+1 );
 				myQueue.add(right);
@@ -94,7 +98,7 @@ public class maze_solving {
 		}
 		
 		//Up
-		if(c_node.getColumn() >= 1 ){
+		if(c_node.getRow() >= 1 ){
 			if(maze[c_node.getRow() - 1][c_node.getColumn()] == 0 ){
 				node up = create_node(c_node.getRow()-1, c_node.getColumn(), depth+1 );
 				myQueue.add(up);
@@ -102,7 +106,10 @@ public class maze_solving {
 			}
 		}
 		
-		if(myQueue.isEmpty()){
+		if(myQueue.isEmpty()){return;}
+		
+		if(myQueue.size() == 1){
+			node tmp = myQueue.remove();
 			return;
 		}else{
 			
@@ -117,6 +124,7 @@ public class maze_solving {
 			
 			beef(tmp);
 		}
+		return;
 	}
 
 	public static node create_node(int row, int col, int depth) {
