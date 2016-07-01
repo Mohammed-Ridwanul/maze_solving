@@ -22,7 +22,8 @@ public class maze_solving {
 		System.out.println("Blocked nodes: ");
 		while( i < Integer.parseInt(num_blocked)){
 			//3 Stands for blocked, 1 for start node, 2 for goal node
-			//0 for visited, maze is initialized to 0 by default.
+			//0 for not visited, maze is initialized to 0 by default.
+			// 9 for visited
 			int j = rand.nextInt(25);
 			int k = rand.nextInt(25);
 			maze[j][k] = 3;
@@ -56,22 +57,66 @@ public class maze_solving {
 		
 		path_array.add(c_node);
 		
+		//Found goal
 		if(maze[c_node.getRow()][c_node.getColumn()] == 2){
 			return;
 		}
 		
-		c_node.setVisited(true);
+		//Set visited
+		maze[c_node.getRow()][c_node.getColumn()] = 9; 
 		
+
 		//Left
-		if(maze[c_node.getRow()][c_node.getColumn() - 1] == 0 ){
-			node left = create_node(c_node.getRow(), c_node.getColumn()-1, depth+1 );
-			myQueue.add(left);
-			flag = true; 
+		if(c_node.getRow()>= 1){
+			if(maze[c_node.getRow()][c_node.getColumn() - 1] == 0 ){
+				node left = create_node(c_node.getRow(), c_node.getColumn()-1, depth+1 );
+				myQueue.add(left);
+				flag = true; 
+			}
 		}
 		
 		//down
+		if(c_node.getColumn() <= 23 ){
+			if(maze[c_node.getRow() + 1][c_node.getColumn()] == 0 ){
+				node down = create_node(c_node.getRow() + 1, c_node.getColumn(), depth+1 );
+				myQueue.add(down);
+				flag = true; 
+			}
+		}
 		
+		//right
+		if(c_node.getRow() <= 23 ){
+			if(maze[c_node.getRow()][c_node.getColumn() + 1] == 0 ){
+				node right = create_node(c_node.getRow(), c_node.getColumn() + 1, depth+1 );
+				myQueue.add(right);
+				flag = true; 
+			}
+		}
 		
+		//Up
+		if(c_node.getColumn() >= 1 ){
+			if(maze[c_node.getRow() - 1][c_node.getColumn()] == 0 ){
+				node up = create_node(c_node.getRow()-1, c_node.getColumn(), depth+1 );
+				myQueue.add(up);
+				flag = true; 
+			}
+		}
+		
+		if(myQueue.isEmpty()){
+			return;
+		}else{
+			
+			node tmp = myQueue.remove();
+			if(!flag){
+				int d = myQueue.peek().getDepth();
+				//pop last until depth 
+				for(int i=path_array.size() - 1; i<d; i--){
+					path_array.remove(i);
+				}
+			}
+			
+			beef(tmp);
+		}
 	}
 
 	public static node create_node(int row, int col, int depth) {

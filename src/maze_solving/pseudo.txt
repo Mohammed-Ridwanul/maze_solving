@@ -1,5 +1,14 @@
+
+matrix [25,25];
+//set all blocked states
+
+goal_node = [4,4]);
+
+start_node = [1,1];
+
 queue = [];
-current_node = start_node;
+current_node = node(start_position);
+
 
 path_array = arraylist();
 
@@ -17,7 +26,8 @@ recursive method(){
 		
 		//left
 		is(matrix[current_node.row,current_node.column-1] == not_visited){
-			add matrix[current_node.row,current_node.column-1] to front queue
+		create left_node
+			add left_node[current_node.row,current_node.column-1] to front queue
 			flag = true;
 		}
 
