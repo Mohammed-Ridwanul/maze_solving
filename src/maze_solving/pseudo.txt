@@ -1,0 +1,68 @@
+queue = [];
+current_node = start_node;
+
+path_array = arraylist();
+
+recursive method(){
+
+	path_array.add(current_node);
+	
+	if(goal_node == current_node ) done!!!, exit
+	
+	else
+		
+		bool flag = false;
+		
+		matrix[current_node] == visited;
+		
+		//left
+		is(matrix[current_node.row,current_node.column-1] == not_visited){
+			add matrix[current_node.row,current_node.column-1] to front queue
+			flag = true;
+		}
+
+		//down
+		is(matrix[current_node.row+1,current_node.column] == not_visited){
+			add matrix[current_node.row+1,current_node.column] to front queue
+			flag = true;
+		}
+		
+		//right
+		is(matrix[current_node.row,current_node.column+1] == not_visited){
+			add matrix[current_node.row,current_node.column+1] to front queue
+			flag =true;
+		}
+		
+		//up
+		is(matrix[current_node.row-1,current_node.column] == not_visited){
+			add matrix[current_node.row-1,current_node.column] to front queue
+			flag = true;
+		}
+
+
+
+
+		if(!flag) {
+		
+			path_array.pop_last();
+		
+		}
+		
+		if(queue.empty()){
+			
+			exit; -->not found
+		
+		}
+		
+		current_node = queue.first();
+		queue.pop();
+		
+		
+		
+		recursive_method();
+		
+
+}
+
+
+cost = path_array.size();
