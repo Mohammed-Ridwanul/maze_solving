@@ -76,3 +76,26 @@ recursive method(){
 
 
 cost = path_array.size();
+
+
+
+//EXtra stuff
+
+		if(myQueue.isEmpty()){return;}
+		
+		if(myQueue.size() == 1){
+			node tmp = myQueue.removeFirst();
+			beef(tmp);
+			return;
+		}else{
+			
+			node tmp = myQueue.removeFirst();
+			if(!flag){
+				//pop last until depth 
+				for(int i=path_array.size() - 1; i<myQueue.peek().getDepth(); i--){
+					path_array.remove(i);
+				}
+			}
+			
+			beef(tmp);
+		}
