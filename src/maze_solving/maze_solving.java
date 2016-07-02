@@ -5,7 +5,8 @@ import java.util.*;
 public class maze_solving {
 	static LinkedList<node> myQueue = new LinkedList<node>();
 	static int depth;
-	static int size;
+	static int size;		
+	static boolean flag = false;
 	
 	//Maze is initialized to 0 by default
 	static int[][] maze;
@@ -37,9 +38,6 @@ public class maze_solving {
 			i++;
 		}
 		
-//		maze[1][1] = 3;
-//		maze[1][2] = 3;
-		
 		System.out.print("Enter starting row: ");
 		int row = Integer.parseInt(scanner.next());
 		System.out.print("Enter starting column: ");
@@ -57,23 +55,88 @@ public class maze_solving {
 		depth = 0;
 		
 		Long t1 = System.nanoTime();
+		
 		node tmp = create_node(row,col,0);
+		
+		/* 												Depth First Search 
 		myQueue.addFirst(tmp);
-		beef(tmp);
+		depthFirstSearch(tmp);
+		 												Depth First Search End 
+		*/
+		
+		/* Breadth First Search */
+//		myQueue.addLast(tmp);
+		breadthFirstSearch(tmp);
+		
 		Long t2 = System.nanoTime() - t1;
 		
 		for(node n : path_array){
 			System.out.println("(" + n.getRow() + " " + n.getColumn() + ")" );
 		}
 		
+		System.out.println("Found path: " + flag);
 		System.out.println("Total cost: " + depth);
 		
 		System.out.println("Elapsed time: " + t2 + " ns");
 		
 	}
+	
+	public static int breadthFirstSearch(node c_node){
+		path_array.add(c_node);
+		
+		//Found goal
+		if(maze[c_node.getRow()][c_node.getColumn()] == 2){
+			flag = true;
+			return 1;
+		}
+		
+		//Set visited
+		maze[c_node.getRow()][c_node.getColumn()] = 9; 
+		
 
-	public static int beef(node c_node) {
-		boolean flag = false;
+		//Left
+		if(c_node.getColumn()>= 1){
+			if(maze[c_node.getRow()][c_node.getColumn() - 1] == 0 || maze[c_node.getRow()][c_node.getColumn() - 1] == 2 ){
+				node left = create_node(c_node.getRow(), c_node.getColumn()-1, depth+1 );
+				myQueue.addLast(left);
+			}
+		}
+		
+		//down
+		if(c_node.getRow() < size - 1 ){
+			if(maze[c_node.getRow() + 1][c_node.getColumn()] == 0 || maze[c_node.getRow() + 1][c_node.getColumn()] == 2 ){
+				node down = create_node(c_node.getRow() + 1, c_node.getColumn(), depth+1 );
+				myQueue.addLast(down);
+			}
+		}
+		
+		//right
+		if(c_node.getColumn() < size-1 ){
+			if(maze[c_node.getRow()][c_node.getColumn() + 1] == 0 || maze[c_node.getRow()][c_node.getColumn() + 1] == 2 ){
+				node right = create_node(c_node.getRow(), c_node.getColumn() + 1, depth+1 );
+				myQueue.addLast(right);
+			}
+		}
+		
+		//Up
+		if(c_node.getRow() >= 1 ){
+			if(maze[c_node.getRow() - 1][c_node.getColumn()] == 0 || maze[c_node.getRow() - 1][c_node.getColumn()] == 2 ){
+				node up = create_node(c_node.getRow()-1, c_node.getColumn(), depth+1 );
+				myQueue.addLast(up);
+			}
+		}
+		if(myQueue.isEmpty()){
+			return 0;
+		}
+		
+		if(breadthFirstSearch(myQueue.removeFirst()) == 1){
+			return 1;
+		}else{
+			return 0;
+		}
+	}
+
+	public static int depthFirstSearch(node c_node) {
 		depth++;
 		
 		if(myQueue.isEmpty()){
@@ -86,6 +149,7 @@ public class maze_solving {
 		
 		//Found goal
 		if(maze[c_node.getRow()][c_node.getColumn()] == 2){
+			flag = true;
 			return 1;
 		}
 		
@@ -99,10 +163,9 @@ public class maze_solving {
 				node left = create_node(c_node.getRow(), c_node.getColumn()-1, depth+1 );
 				myQueue.addFirst(left);
 //				depth++;
-				if(beef(left)==1){
+				if(depthFirstSearch(left)==1){
 					return 1;
 				};				
-				flag = true; 
 			}
 		}
 		
@@ -112,10 +175,9 @@ public class maze_solving {
 				node down = create_node(c_node.getRow() + 1, c_node.getColumn(), depth+1 );
 				myQueue.addFirst(down);
 //				depth++;
-				if(beef(down)==1){
+				if(depthFirstSearch(down)==1){
 					return 1;
 				};
-				flag = true; 
 			}
 		}
 		
@@ -125,10 +187,9 @@ public class maze_solving {
 				node right = create_node(c_node.getRow(), c_node.getColumn() + 1, depth+1 );
 				myQueue.addFirst(right);
 //				depth++;
-				if(beef(right) ==1){
+				if(depthFirstSearch(right) ==1){
 					return 1;
-				};
-				flag = true; 
+				}; 
 			}
 		}
 		
@@ -138,10 +199,9 @@ public class maze_solving {
 				node up = create_node(c_node.getRow()-1, c_node.getColumn(), depth+1 );
 				myQueue.addFirst(up);
 //				depth++;
-				if(beef(up) == 1){
+				if(depthFirstSearch(up) == 1){
 					return 1;
 				};
-				flag = true; 
 			}
 		}
 		
