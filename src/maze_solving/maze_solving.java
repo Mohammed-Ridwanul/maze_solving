@@ -10,16 +10,27 @@ public class maze_solving {
 	static boolean flag = false;
 	static int gRow;
 	static int gCol;
+	static int search_type;
+	static int row;
+	static int col;
 	
 	//Maze is initialized to 0 by default
 	static int[][] maze;
 	static int[][] temp_maze;
 	
+	//Will give all nodes visited
 	static ArrayList<node> path_array = new ArrayList<node>();
-	static ArrayList<node> a_star_array = new ArrayList<node>();
-	static LinkedList <node> actual_path = new LinkedList<node>();
 	
-	public static void main(String[] args) {		
+	static ArrayList<node> search_list = new ArrayList<node>();
+	
+	static LinkedList <node> a_star_result_path = new LinkedList<node>();
+	
+	static LinkedList <node> bfs_result_path = new LinkedList<node>();
+	
+	static LinkedList <node> dfs_result_path = new LinkedList<node>();
+	
+	public static void main(String[] args) {
+		
 		int i = 0;
 		Scanner scanner = new Scanner(System.in);
 		
@@ -27,6 +38,10 @@ public class maze_solving {
 		size = Integer.parseInt(scanner.next());
 		
 		maze = new int[size][size];
+		temp_maze = new int[size][size];
+		
+		System.out.print("1 for A*, 2 for BFS, 3 for DFS: ");
+		int search_type = Integer.parseInt(scanner.next());
 		
 		System.out.print("How many nodes to block: ");
 		String num_blocked = scanner.next();
@@ -46,16 +61,16 @@ public class maze_solving {
 		}
 		
 		System.out.print("Enter starting row: ");
-		int row = Integer.parseInt(scanner.next());
+			row = Integer.parseInt(scanner.next());
 		System.out.print("Enter starting column: ");
-		int col = Integer.parseInt(scanner.next());
+			col = Integer.parseInt(scanner.next());
 		
 		maze[row][col] = 1;
 		
 		System.out.print("Enter goal row: ");
-		gRow = Integer.parseInt(scanner.next());
+			gRow = Integer.parseInt(scanner.next());
 		System.out.print("Enter goal column: ");
-		gCol = Integer.parseInt(scanner.next());
+			gCol = Integer.parseInt(scanner.next());
 		scanner.close();
 		
 		maze[gRow][gCol] = 2;
@@ -63,37 +78,76 @@ public class maze_solving {
 		temp_maze = maze.clone();
 		
 		Long t1 = System.nanoTime();
+		Long t2 = t1;
 		
+		//Generate start node
 		node tmp = create_node(row,col,0);
+		path_array.add(tmp);
 		
-//		Depth First Search 
-//		myQueue.addFirst(tmp);
-//		depthFirstSearch(tmp);
+		switch(search_type)
+		{
+		case 3:
+			// Depth First Search 
+			myQueue.addFirst(tmp);
+			depthFirstSearch(tmp);
+			t2 = System.nanoTime() - t1;
+
+			for(node n : dfs_result_path){
+				
+			}
+			
+			if(flag){
+				System.out.println("Found path with cost from source to goal: " + dfs_result_path.size());
+			}else{
+				System.out.println("Failed to find path from source to goal.");
+			}
+			break;
+			
+		case 2:
+			// Breadth First Search
+			breadthFirstSearch(tmp);
+			bfs_result_path.add(tmp);
+			t2 = System.nanoTime() - t1;
+			
+			for(int i1 = bfs_result_path.size()-1; i1>=0 ; i1--){
+				System.out.println("(" + bfs_result_path.get(i1).y() + " " + bfs_result_path.get(i1).x() + ")" );
+			}
+			
+			if(flag){
+				System.out.println("Found path with cost from source to goal: " + (bfs_result_path.size()-1));
+			}else{
+				System.out.println("Failed to find path from source to goal.");
+			}
+			break;
+			
+		case 1:
+			//	A* Search
+			a_star(tmp);
+			t2 = System.nanoTime() - t1;
+			
+			for(node n : a_star_result_path){
+				System.out.println("(" + n.y() + " " + n.x() + ")" );
+			}
+			
+			if(flag){
+				System.out.println("Found path with cost from source to goal: " + a_star_result_path.size());
+			}else{
+				System.out.println("Failed to find path from source to goal.");
+			}
+			break;
+			
+		}
 		
-//		Breadth First Search
-//		breadthFirstSearch(tmp);
-		
-//		A* Search
-		a_star(tmp, 0);
-		
-		Long t2 = System.nanoTime() - t1;
-		
+		System.out.println("All nodes visited: ");
 		for(node n : path_array){
 			System.out.println("(" + n.y() + " " + n.x() + ")" );
 		}
 		
-		System.out.println("Found path: " + flag);
-		//All others
-//		System.out.println("Total cost: " + depth);
-		
-		//A*star
-		System.out.println("Total cost: " + actual_path.size());
-		
+		System.out.println("Total nodes visited: " + path_array.size());
 		System.out.println("Elapsed time: " + t2 + " ns");
-		
 	}
 	
-	public static int a_star(node c_node, int depth){
+	public static int a_star(node c_node){
 		
 		//Found goal
 		if(maze[c_node.y()][c_node.x()] == 2){
@@ -103,34 +157,35 @@ public class maze_solving {
 		
 		gen_neighbours(c_node, c_node.getDepth());
 		
-		//TODO check if empty
-		if(a_star_array.isEmpty()){
+		if(search_list.isEmpty()){
 			flag = false;
 			return 0;
 		}
 		
-		node tmp = a_star_array.remove(0);
+		node tmp = search_list.remove(0);
 	
-		clear_path();
-		append_path(tmp);
+		clear_path(a_star_result_path);
+		append_path(tmp, a_star_result_path);
 		
-		return(a_star(tmp, tmp.getDepth()));
+		return(a_star(tmp));
 	}
 	
-	private static void clear_path() {
+	private static void clear_path(LinkedList <node> x) {
 		//Resets maze to original, allowing backtracking. 
-		temp_maze = maze.clone();
-		actual_path.clear();
+		temp_maze = new int [size][size];
+		temp_maze[row][col] = 9;
+		temp_maze[gRow][gCol] =2;
+		x.clear();
 	}
 
-	private static void append_path(node temp) {
+	private static void append_path(node temp, LinkedList <node> k) {
 		//Set visited
-		maze[temp.y()][temp.x()] = 9;
+		temp_maze[temp.y()][temp.x()] = 9;
 		if(temp.getParent() == null){
 			return;
 		}else{
-			actual_path.add(temp);
-			append_path(temp.getParent());
+			k.add(temp);
+			append_path(temp.getParent(), k);
 		}
 	}
 
@@ -139,49 +194,50 @@ public class maze_solving {
 		
 		//Check left
 		if(c_node.x()>= 1){
-			if(maze[c_node.y()][c_node.x() - 1] != 9 || maze[c_node.y()][c_node.x() - 1] != 3 ){
+			if(temp_maze[c_node.y()][c_node.x() - 1] == 0 || temp_maze[c_node.y()][c_node.x() - 1] == 2 ){
 				node left = create_node(c_node.y(), c_node.x()-1, (d+1));
 				left.setEval(eval(c_node.y(), c_node.x()-1, (d+1)));
 				left.setParent(c_node);
-				a_star_array.add(left);
+				search_list.add(left);
 				hasChild = true;
 			}
 		}
 		
 		//Down
 		if(c_node.y() < size - 1 ){
-			if(maze[c_node.y() + 1][c_node.x()] != 9 || maze[c_node.y() + 1][c_node.x()] != 3 ){
+			if(temp_maze[c_node.y() + 1][c_node.x()] == 0 || temp_maze[c_node.y() + 1][c_node.x()] == 2 ){
 				node down = create_node(c_node.y() + 1, c_node.x(), d+1 );
 				down.setEval(eval(c_node.y() + 1, c_node.x(), d+1));
 				down.setParent(c_node);
-				a_star_array.add(down);
+				search_list.add(down);
 				hasChild = true;
 			}
 		}
 		
 		//right
 		if(c_node.x() < size-1 ){
-			if(maze[c_node.y()][c_node.x() + 1] != 9 || maze[c_node.y()][c_node.x() + 1] != 3 ){
+			if(temp_maze[c_node.y()][c_node.x() + 1] == 0 || temp_maze[c_node.y()][c_node.x() + 1] == 2 ){
 				node right = create_node(c_node.y(), c_node.x() + 1, d+1 );
 				right.setEval(eval(c_node.y(), c_node.x() + 1, d+1 ));
 				right.setParent(c_node);
-				a_star_array.add(right);
+				search_list.add(right);
 				hasChild = true;
 			}
 		}
 		
 		//Up
 		if(c_node.y() >= 1 ){
-			if(maze[c_node.y() - 1][c_node.x()] != 9 || maze[c_node.y() - 1][c_node.x()] != 3 ){
+			if(temp_maze[c_node.y() - 1][c_node.x()] == 0 || temp_maze[c_node.y() - 1][c_node.x()] == 2 ){
 				node up = create_node(c_node.y()-1, c_node.x(), d+1 );
 				up.setEval(eval(c_node.y()-1, c_node.x(), d+1 ));
 				up.setParent(c_node);
-				a_star_array.add(up);
+				search_list.add(up);
 				hasChild = true;
 			}
 		}
-		if(hasChild){
-			Collections.sort(a_star_array);
+		
+		if(hasChild && search_type == 1){
+			Collections.sort(search_list);
 		}
 		
 		return hasChild;
@@ -194,62 +250,32 @@ public class maze_solving {
 	}
 	
 	public static int breadthFirstSearch(node c_node){
-		path_array.add(c_node);
 		
 		//Found goal
 		if(maze[c_node.y()][c_node.x()] == 2){
+			append_path(c_node, bfs_result_path);
 			flag = true;
 			return 1;
 		}
 		
-		//Set visited
-		maze[c_node.y()][c_node.x()] = 9; 
+		append_path(c_node, bfs_result_path);
 		
-
-		//Left
-		if(c_node.x()>= 1){
-			if(maze[c_node.y()][c_node.x() - 1] == 0 || maze[c_node.y()][c_node.x() - 1] == 2 ){
-				node left = create_node(c_node.y(), c_node.x()-1, depth+1 );
-				myQueue.addLast(left);
-			}
-		}
+		gen_neighbours(c_node, c_node.getDepth());
 		
-		//down
-		if(c_node.y() < size - 1 ){
-			if(maze[c_node.y() + 1][c_node.x()] == 0 || maze[c_node.y() + 1][c_node.x()] == 2 ){
-				node down = create_node(c_node.y() + 1, c_node.x(), depth+1 );
-				myQueue.addLast(down);
-			}
-		}
-		
-		//right
-		if(c_node.x() < size-1 ){
-			if(maze[c_node.y()][c_node.x() + 1] == 0 || maze[c_node.y()][c_node.x() + 1] == 2 ){
-				node right = create_node(c_node.y(), c_node.x() + 1, depth+1 );
-				myQueue.addLast(right);
-			}
-		}
-		
-		//Up
-		if(c_node.y() >= 1 ){
-			if(maze[c_node.y() - 1][c_node.x()] == 0 || maze[c_node.y() - 1][c_node.x()] == 2 ){
-				node up = create_node(c_node.y()-1, c_node.x(), depth+1 );
-				myQueue.addLast(up);
-			}
-		}
-
-		if(myQueue.isEmpty()){
+		if(search_list.isEmpty()){
+			flag = false;
 			return 0;
 		}
 		
-		depth++;
+		path_array.add(search_list.get(0));
+		node tmp = search_list.remove(0);
+	
+
+		clear_path(bfs_result_path);
 		
-		if(breadthFirstSearch(myQueue.removeFirst()) == 1){
-			return 1;
-		}else{
-			depth--;
-			return 0;
-		}
+		
+		return(breadthFirstSearch(tmp));
+
 	}
 
 	public static int depthFirstSearch(node c_node) {
