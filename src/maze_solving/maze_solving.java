@@ -13,6 +13,9 @@ public class maze_solving {
 	static int search_type;
 	static int row;
 	static int col;
+	static int num_blocked;
+	static int[] blocked_nodes;
+	static String[] numberStrs;
 	
 	//Maze is initialized to 0 by default
 	static int[][] maze;
@@ -21,7 +24,7 @@ public class maze_solving {
 	//Will give all nodes visited
 	static ArrayList<node> path_array = new ArrayList<node>();
 	
-	static ArrayList<node> search_list = new ArrayList<node>();
+	static LinkedList<node> search_list = new LinkedList<node>();
 	
 	static LinkedList <node> a_star_result_path = new LinkedList<node>();
 	
@@ -41,23 +44,19 @@ public class maze_solving {
 		temp_maze = new int[size][size];
 		
 		System.out.print("1 for A*, 2 for BFS, 3 for DFS: ");
-		int search_type = Integer.parseInt(scanner.next());
+		search_type = Integer.parseInt(scanner.next());
 		
-		System.out.print("How many nodes to block: ");
-		String num_blocked = scanner.next();
+//		System.out.print("Enter node to block: ");
+//		num_blocked = Integer.parseInt(scanner.next());
 		
 		Random rand = new Random();
-		
 		System.out.println("Blocked nodes: ");
-		while( i < Integer.parseInt(num_blocked)){
-			//3 Stands for blocked, 1 for start node, 2 for goal node
-			//0 for not visited, maze is initialized to 0 by default.
-			// 9 for visited
-			int j = rand.nextInt(size);
-			int k = rand.nextInt(size);
-			maze[j][k] = 3;
-			System.out.println("(" + j + " " + k + ")");
-			i++;
+		String blocks = scanner.next();
+		numberStrs = blocks.split(",");
+		
+		for(int l = 0; l< numberStrs.length; l = l+2){
+			temp_maze[Integer.parseInt(numberStrs[l])][Integer.parseInt(numberStrs[l+1])] = 3;
+			System.out.println("(" + Integer.parseInt(numberStrs[l]) + " " + Integer.parseInt(numberStrs[l+1]) + ")");
 		}
 		
 		System.out.print("Enter starting row: ");
@@ -75,7 +74,7 @@ public class maze_solving {
 		
 		maze[gRow][gCol] = 2;
 		depth = 0;
-		temp_maze = maze.clone();
+		temp_maze[gRow][gCol] = 2;
 		
 		Long t1 = System.nanoTime();
 		Long t2 = t1;
@@ -88,16 +87,16 @@ public class maze_solving {
 		{
 		case 3:
 			// Depth First Search 
-			myQueue.addFirst(tmp);
 			depthFirstSearch(tmp);
+			dfs_result_path.add(tmp);
 			t2 = System.nanoTime() - t1;
 
-			for(node n : dfs_result_path){
-				
+			for(int i1 = dfs_result_path.size()-1; i1>=0 ; i1--){
+				System.out.println("(" + dfs_result_path.get(i1).y() + " " + dfs_result_path.get(i1).x() + ")" );
 			}
 			
 			if(flag){
-				System.out.println("Found path with cost from source to goal: " + dfs_result_path.size());
+				System.out.println("Found path with cost from source to goal: " + (dfs_result_path.size()-1));
 			}else{
 				System.out.println("Failed to find path from source to goal.");
 			}
@@ -111,7 +110,7 @@ public class maze_solving {
 			
 			for(int i1 = bfs_result_path.size()-1; i1>=0 ; i1--){
 				System.out.println("(" + bfs_result_path.get(i1).y() + " " + bfs_result_path.get(i1).x() + ")" );
-			}
+			}S
 			
 			if(flag){
 				System.out.println("Found path with cost from source to goal: " + (bfs_result_path.size()-1));
@@ -173,8 +172,15 @@ public class maze_solving {
 	private static void clear_path(LinkedList <node> x) {
 		//Resets maze to original, allowing backtracking. 
 		temp_maze = new int [size][size];
+		
 		temp_maze[row][col] = 9;
 		temp_maze[gRow][gCol] =2;
+		
+		for(int l = 0; l< numberStrs.length; l = l+2){
+			temp_maze[Integer.parseInt(numberStrs[l])][Integer.parseInt(numberStrs[l+1])] = 3;
+//			System.out.println("(" + Integer.parseInt(numberStrs[l]) + " " + Integer.parseInt(numberStrs[l+1]) + ")");
+		}
+		
 		x.clear();
 	}
 
@@ -198,8 +204,22 @@ public class maze_solving {
 				node left = create_node(c_node.y(), c_node.x()-1, (d+1));
 				left.setEval(eval(c_node.y(), c_node.x()-1, (d+1)));
 				left.setParent(c_node);
-				search_list.add(left);
-				hasChild = true;
+				if(search_type!=3){
+					search_list.add(left);
+				}else{
+					path_array.add(left);
+					clear_path(dfs_result_path);
+					append_path(left, dfs_result_path);
+					if(maze[left.y()][left.x()] == 2){
+						flag = true;
+						return flag;
+					}
+					if(gen_neighbours(left, left.getDepth())){
+						return true;
+					}else{
+						clear_path(dfs_result_path);
+					}
+				}
 			}
 		}
 		
@@ -209,8 +229,22 @@ public class maze_solving {
 				node down = create_node(c_node.y() + 1, c_node.x(), d+1 );
 				down.setEval(eval(c_node.y() + 1, c_node.x(), d+1));
 				down.setParent(c_node);
-				search_list.add(down);
-				hasChild = true;
+				if(search_type!=3){
+					search_list.add(down);
+				}else{
+					path_array.add(down);
+					clear_path(dfs_result_path);
+					append_path(down, dfs_result_path);
+					if(maze[down.y()][down.x()] == 2){
+						flag = true;
+						return flag;
+					}
+					if(gen_neighbours(down, down.getDepth())){
+						return true;
+					}else{
+						clear_path(dfs_result_path);
+					}
+				}
 			}
 		}
 		
@@ -220,8 +254,22 @@ public class maze_solving {
 				node right = create_node(c_node.y(), c_node.x() + 1, d+1 );
 				right.setEval(eval(c_node.y(), c_node.x() + 1, d+1 ));
 				right.setParent(c_node);
-				search_list.add(right);
-				hasChild = true;
+				if(search_type!=3){
+					search_list.add(right);
+				}else{
+					path_array.add(right);
+					clear_path(dfs_result_path);
+					append_path(right, dfs_result_path);
+					if(maze[right.y()][right.x()] == 2){
+						flag = true;
+						return flag;
+					}
+					if(gen_neighbours(right, right.getDepth())){
+						return true;
+					}else{
+						clear_path(dfs_result_path);
+					}
+				}
 			}
 		}
 		
@@ -231,8 +279,22 @@ public class maze_solving {
 				node up = create_node(c_node.y()-1, c_node.x(), d+1 );
 				up.setEval(eval(c_node.y()-1, c_node.x(), d+1 ));
 				up.setParent(c_node);
-				search_list.add(up);
-				hasChild = true;
+				if(search_type!=3){
+					search_list.add(up);
+				}else{
+					path_array.add(up);
+					clear_path(dfs_result_path);
+					append_path(up, dfs_result_path);
+					if(maze[up.y()][up.x()] == 2){
+						flag = true;
+						return flag;
+					}
+					if(gen_neighbours(up, up.getDepth())){
+						return true;
+					}else{
+						clear_path(dfs_result_path);
+					}
+				}
 			}
 		}
 		
@@ -278,87 +340,11 @@ public class maze_solving {
 
 	}
 
-	public static int depthFirstSearch(node c_node) {
-		depth++;
+	public static void depthFirstSearch(node c_node) {
 		
-		if(myQueue.isEmpty()){
-			depth--;
-			return 0;
-		}
-		
-		path_array.add(c_node);
-		myQueue.removeFirst();
-		
-		//Found goal
-		if(maze[c_node.y()][c_node.x()] == 2){
-			flag = true;
-			return 1;
-		}
-		
-		//Set visited
-		maze[c_node.y()][c_node.x()] = 9; 
-		
+		gen_neighbours(c_node, c_node.getDepth());
 
-		//Left
-		if(c_node.x()>= 1){
-			if(maze[c_node.y()][c_node.x() - 1] == 0 || maze[c_node.y()][c_node.x() - 1] == 2 ){
-				node left = create_node(c_node.y(), c_node.x()-1, depth+1 );
-				myQueue.addFirst(left);
-//				depth++;
-				if(depthFirstSearch(left)==1){
-					return 1;
-				};	
-				System.out.println(path_array.get(path_array.size()-1));
-				path_array.remove(path_array.size()-1);
-				System.out.println(path_array.get(path_array.size()));
-			}
-		}
-		
-		//down
-		if(c_node.y() < size - 1 ){
-			if(maze[c_node.y() + 1][c_node.x()] == 0 || maze[c_node.y() + 1][c_node.x()] == 2 ){
-				node down = create_node(c_node.y() + 1, c_node.x(), depth+1 );
-				myQueue.addFirst(down);
-//				depth++;
-				if(depthFirstSearch(down)==1){
-					return 1;
-				};
-				System.out.println(path_array.get(path_array.size()-1));
-				path_array.remove(path_array.size()-1);
-			}
-		}
-		
-		//right
-		if(c_node.x() < size-1 ){
-			if(maze[c_node.y()][c_node.x() + 1] == 0 || maze[c_node.y()][c_node.x() + 1] == 2 ){
-				node right = create_node(c_node.y(), c_node.x() + 1, depth+1 );
-				myQueue.addFirst(right);
-//				depth++;
-				if(depthFirstSearch(right) ==1){
-					return 1;
-				}; 
-				System.out.println(path_array.get(path_array.size()-1));
-				path_array.remove(path_array.size()-1);
-			}
-		}
-		
-		//Up
-		if(c_node.y() >= 1 ){
-			if(maze[c_node.y() - 1][c_node.x()] == 0 || maze[c_node.y() - 1][c_node.x()] == 2 ){
-				node up = create_node(c_node.y()-1, c_node.x(), depth+1 );
-				myQueue.addFirst(up);
-//				depth++;
-				if(depthFirstSearch(up) == 1){
-					return 1;
-				};
-				System.out.println(path_array.get(path_array.size()-1));
-				path_array.remove(path_array.size()-1);
-			}
-		}
-		
-		depth--;
-
-		return 0;
+		return;
 	}
 
 	public static node create_node(int row, int col, int depth) {
