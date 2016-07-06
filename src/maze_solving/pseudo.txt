@@ -99,3 +99,37 @@ cost = path_array.size();
 			
 			beef(tmp);
 		}
+		
+		
+		
+		
+		
+		
+		
+		
+///////////////////////OLD BFS
+		
+//		//Found goal
+//		if(maze[c_node.y()][c_node.x()] == 2){
+//			append_path(c_node, bfs_result_path);
+//			flag = true;
+//			return 1;
+//		}
+//		
+//		append_path(c_node, bfs_result_path);
+//		
+//		gen_neighbours(c_node, c_node.getDepth());
+//		
+//		if(search_list.isEmpty()){
+//			flag = false;
+//			return 0;
+//		}
+//		
+//		path_array.add(search_list.get(0));
+//		node tmp = search_list.remove(0);
+//	
+//
+//		clear_path(bfs_result_path);
+//		
+//		
+//		return(breadthFirstSearch(tmp));

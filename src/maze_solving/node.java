@@ -1,20 +1,23 @@
 package maze_solving;
 
+import java.util.ArrayList;
+import java.util.UUID;
+
 public class node implements Comparable<node> {
 	private int depth;
 	private int row;
 	private int column;
-	private boolean visited;
 	private int eval; 
 	private node parent;
+	public String path;
 	
 	public node(int r, int c, int d){
 		depth = d;
 		row = r;
 		column = c;
-		visited = false;
 		eval = 999;
 		parent = null; 
+		path = " ";
 	}
 	
 	@Override
@@ -39,10 +42,6 @@ public class node implements Comparable<node> {
 		column =m;
 	}
 	
-	public void setVisited(boolean v){
-		visited = v;
-	}
-	
 	public void setParent(node c_node) {
 		parent = c_node;
 	}
@@ -61,10 +60,6 @@ public class node implements Comparable<node> {
 	
 	public int x(){
 		return column;
-	}
-	
-	public boolean getVisited(){
-		return visited;
 	}
 	
 	public node getParent() {
